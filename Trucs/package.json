@@ -1,0 +1,19 @@
+{
+  "name": "rpg-cli-typescript",
+  "version": "1.0.0",
+  "description": "RPG en ligne de commande développé en TypeScript avec POO stricte",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "tsc && node dist/index.js",
+    "watch": "tsc --watch"
+  },
+  "keywords": ["rpg", "cli", "typescript", "poo", "game"],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.0.0"
+  }
+}
