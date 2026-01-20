@@ -1,0 +1,133 @@
+import { Adventurer } from '../Adventurer.ts';
+import { Character } from '../Character.ts';
+import { CharacterStats } from '../../interfaces/CharacterStats.ts';
+
+/**
+ * Classe Prêtre : Action de Soin (restaure 25% des PV d'un allié)
+ */
+export class Priest extends Adventurer {
+  constructor(name: string) {
+    const stats: CharacterStats = {
+      name: name,
+      hp: 90,
+      maxHp: 90,
+      attack: 10,
+      defense: 6,
+      speed: 8,
+      mana: 120,
+      maxMana: 120,
+    };
+    super(name, stats, 'Prêtre');
+  }
+
+  protected levelUp(): void {
+    this.level++;
+    this.experience = 0;
+
+    this.maxHp += 18;
+    this.hp = this.maxHp;
+    this.maxMana += 25;
+    this.mana = this.maxMana;
+    this.attack += 2;
+    this.defense += 2;
+    this.speed += 1;
+
+    console.log(`\n🎉 ${this.name} monte au niveau ${this.level} !`);
+    console.log(`Stats améliorées : HP+18, MANA+25, ATK+2, DEF+2, SPD+1\n`);
+  }
+
+  protected getAvailableActions(): string[] {
+    const actions = ['⚔️  Attaque normale'];
+
+    if (this.mana >= 20) {
+      actions.push('✨ Soin (20 mana, restaure 25% HP d\'un allié)');
+    } else {
+      actions.push('✨ Soin (20 mana) - PAS ASSEZ DE MANA');
+    }
+
+    if (this.mana >= 40) {
+      actions.push('🌟 Soin de groupe (40 mana, 15% HP à tous les alliés)');
+    } else {
+      actions.push('🌟 Soin de groupe (40 mana) - PAS ASSEZ DE MANA');
+    }
+
+    if (this.mana >= 30) {
+      actions.push('🔆 Lumière Sacrée (30 mana, dégâts magiques)');
+    } else {
+      actions.push('🔆 Lumière Sacrée (30 mana) - PAS ASSEZ DE MANA');
+    }
+
+    return actions;
+  }
+
+  protected async executeAction(
+    actionIndex: number,
+    allies: Character[],
+    enemies: Character[]
+  ): Promise<void> {
+    switch (actionIndex) {
+      case 0: // Attaque normale
+        await this.normalAttack(enemies);
+        break;
+      case 1: // Soin
+        if (this.mana >= 20) {
+          await this.healAlly(allies);
+        } else {
+          console.log('❌ Pas assez de mana !');
+        }
+        break;
+      case 2: // Soin de groupe
+        if (this.mana >= 40) {
+          await this.groupHeal(allies);
+        } else {
+          console.log('❌ Pas assez de mana !');
+        }
+        break;
+      case 3: // Lumière Sacrée
+        if (this.mana >= 30) {
+          await this.holyLight(enemies);
+        } else {
+          console.log('❌ Pas assez de mana !');
+        }
+        break;
+    }
+  }
+
+  private async normalAttack(enemies: Character[]): Promise<void> {
+    const target = await this.selectTarget(enemies);
+    if (target) {
+      console.log(`${this.name} frappe ${target.getName()} avec son marteau !`);
+      target.takeDamage(this.attack);
+    }
+  }
+
+  private async healAlly(allies: Character[]): Promise<void> {
+    const target = await this.selectAlly(allies);
+    if (target && this.consumeMana(20)) {
+      console.log(`${this.name} lance un Soin sur ${target.getName()} ! (-20 mana)`);
+      target.heal(25);
+    }
+  }
+
+  private async groupHeal(allies: Character[]): Promise<void> {
+    if (this.consumeMana(40)) {
+      console.log(`${this.name} invoque un Soin de Groupe ! (-40 mana)`);
+      const aliveAllies = allies.filter((a) => a.isAlive());
+      aliveAllies.forEach((ally) => {
+        console.log(`  → ${ally.getName()} est soigné !`);
+        ally.heal(15);
+      });
+    }
+  }
+
+  private async holyLight(enemies: Character[]): Promise<void> {
+    const target = await this.selectTarget(enemies);
+    if (target && this.consumeMana(30)) {
+      const magicDamage = Math.floor(this.attack * 1.8);
+      console.log(
+        `${this.name} invoque la Lumière Sacrée sur ${target.getName()} ! (-30 mana)`
+      );
+      target.takeDamage(magicDamage, true); // Ignore la défense
+    }
+  }
+}
