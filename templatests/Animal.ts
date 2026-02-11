@@ -1,8 +1,8 @@
 export class Animal {
     protected name: string; 
-    public size: number; // cm
+    public size: number; 
     protected food: string[];
-    protected maxAge: number; // in days
+    protected maxAge: number; 
     private currentAge = 0;
     protected hungerLevel = 80;
     noise: string | null;
