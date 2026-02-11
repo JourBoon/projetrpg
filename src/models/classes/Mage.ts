@@ -57,22 +57,22 @@ export class Mage extends Adventurer {
   protected async executeAction(
     actionIndex: number,
     _allies: Character[],
-    enemies: Character[]
+    ennemis: Character[]
   ): Promise<void> {
     switch (actionIndex) {
       case 0: // Attaque normale
-        await this.normalAttack(enemies);
+        await this.normalAttack(ennemis);
         break;
       case 1: // Boule de feu
         if (this.mana >= 30) {
-          await this.fireball(enemies);
+          await this.fireball(ennemis);
         } else {
           console.log('❌ Pas assez de mana !');
         }
         break;
       case 2: // Éclair de foudre
         if (this.mana >= 50) {
-          await this.lightning(enemies);
+          await this.lightning(ennemis);
         } else {
           console.log('❌ Pas assez de mana !');
         }
@@ -80,33 +80,33 @@ export class Mage extends Adventurer {
     }
   }
 
-  private async normalAttack(enemies: Character[]): Promise<void> {
-    const target = await this.selectTarget(enemies);
-    if (target) {
-      console.log(`${this.name} attaque ${target.getName()} avec son bâton !`);
-      target.takeDamage(this.attack);
+  private async normalAttack(ennemis: Character[]): Promise<void> {
+    const cible = await this.selectTarget(ennemis);
+    if (cible) {
+      console.log(`${this.name} attaque ${cible.getName()} avec son bâton !`);
+      cible.takeDamage(this.attack);
     }
   }
 
-  private async fireball(enemies: Character[]): Promise<void> {
-    const target = await this.selectTarget(enemies);
-    if (target && this.consumeMana(30)) {
-      const magicDamage = Math.floor(this.attack * 1.5);
+  private async fireball(ennemis: Character[]): Promise<void> {
+    const cible = await this.selectTarget(ennemis);
+    if (cible && this.consumeMana(30)) {
+      const degatsMagiques = Math.floor(this.attack * 1.5);
       console.log(
-        `${this.name} lance une Boule de Feu sur ${target.getName()} ! (-30 mana)`
+        `${this.name} lance une Boule de Feu sur ${cible.getName()} ! (-30 mana)`
       );
-      target.takeDamage(magicDamage, true); // Ignore la défense
+      cible.takeDamage(degatsMagiques, true); // Ignore la défense
     }
   }
 
-  private async lightning(enemies: Character[]): Promise<void> {
-    const target = await this.selectTarget(enemies);
-    if (target && this.consumeMana(50)) {
-      const magicDamage = Math.floor(this.attack * 2);
+  private async lightning(ennemis: Character[]): Promise<void> {
+    const cible = await this.selectTarget(ennemis);
+    if (cible && this.consumeMana(50)) {
+      const degatsMagiques = Math.floor(this.attack * 2);
       console.log(
-        `${this.name} invoque un Éclair de Foudre sur ${target.getName()} ! (-50 mana)`
+        `${this.name} invoque un Éclair de Foudre sur ${cible.getName()} ! (-50 mana)`
       );
-      target.takeDamage(magicDamage, true); // Ignore la défense
+      cible.takeDamage(degatsMagiques, true); // Ignore la défense
     }
   }
 }

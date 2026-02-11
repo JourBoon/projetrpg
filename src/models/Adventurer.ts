@@ -3,10 +3,6 @@ import { CharacterStats } from '../interfaces/CharacterStats.ts';
 import { Menu } from '../utils/Menu.ts';
 import { Inventory } from './Inventory.ts';
 
-/**
- * Classe de base pour tous les aventuriers jouables
- * Contient la gestion du niveau, de l'expérience et du menu d'action
- */
 export abstract class Adventurer extends Character {
   protected level: number;
   protected experience: number;
@@ -23,13 +19,9 @@ export abstract class Adventurer extends Character {
     this.inventory = null;
   }
 
-  /**
-   * Ajoute de l'expérience au joueur et vérifie si un niveau est gagné
-   * @param amount Quantité d'expérience gagnée
-   */
-  public gainExperience(amount: number): void {
-    this.experience += amount;
-    console.log(`${this.name} gagne ${amount} XP ! (Total: ${this.experience})`);
+  public gainExperience(montant: number): void {
+    this.experience += montant;
+    console.log(`${this.name} gagne ${montant} XP ! (Total: ${this.experience})`);
 
     const expNeeded = this.getExpForNextLevel();
     if (this.experience >= expNeeded) {
@@ -37,21 +29,11 @@ export abstract class Adventurer extends Character {
     }
   }
 
-  /**
-   * Monte le joueur d'un niveau et améliore ses stats
-   */
   protected abstract levelUp(): void;
 
-  /**
-   * Calcule l'expérience nécessaire pour le prochain niveau
-   */
   protected getExpForNextLevel(): number {
     return this.level * 100;
   }
-
-  /**
-   * Accesseurs
-   */
   public getLevel(): number {
     return this.level;
   }
@@ -84,48 +66,34 @@ export abstract class Adventurer extends Character {
     console.log(`===============================\n`);
   }
 
-  /**
-   * Méthode abstraite pour obtenir les actions disponibles
-   */
   protected abstract getAvailableActions(): string[];
 
-  /**
-   * Méthode abstraite pour exécuter une action choisie
-   */
   protected abstract executeAction(
     actionIndex: number,
     allies: Character[],
-    enemies: Character[]
+    ennemis: Character[]
   ): Promise<void>;
 
-  /**
-   * Implémentation de performAction pour les aventuriers (avec menu)
-   */
-  public async performAction(allies: Character[], enemies: Character[]): Promise<void> {
+  public async performAction(allies: Character[], ennemis: Character[]): Promise<void> {
     const baseActions = this.getAvailableActions();
     const actions = [...baseActions];
 
-    // Option d'utilisation d'objet si l'inventaire est disponible et non vide
     if (this.inventory && !this.inventory.isEmpty()) {
       actions.push('🎒 Utiliser un objet');
     }
     console.log(`\n--- Tour de ${this.name} (${this.className}) ---`);
     this.displayCurrentStats();
 
-    const choice = await this.menu.selectOption(actions);
+    const choix = await this.menu.selectOption(actions);
 
-    // Dernière option : utilisation d'un objet
-    if (choice === actions.length - 1 && actions[actions.length - 1] === '🎒 Utiliser un objet') {
+    if (choix === actions.length - 1 && actions[actions.length - 1] === '🎒 Utiliser un objet') {
       await this.useItem(allies);
       return;
     }
 
-    await this.executeAction(choice, allies, enemies);
+    await this.executeAction(choix, allies, ennemis);
   }
 
-  /**
-   * Affiche les stats actuelles pendant le combat
-   */
   protected displayCurrentStats(): void {
     let statsStr = `HP: ${this.hp}/${this.maxHp}`;
     if (this.maxMana > 0) {
@@ -134,45 +102,35 @@ export abstract class Adventurer extends Character {
     console.log(statsStr);
   }
 
-  /**
-   * Sélectionne une cible parmi les ennemis vivants
-   */
-  protected async selectTarget(enemies: Character[]): Promise<Character | null> {
-    const aliveEnemies = enemies.filter((e) => e.isAlive());
-    if (aliveEnemies.length === 0) return null;
+  protected async selectTarget(ennemis: Character[]): Promise<Character | null> {
+    const ennemisVivants = ennemis.filter((e) => e.isAlive());
+    if (ennemisVivants.length === 0) return null;
 
-    if (aliveEnemies.length === 1) {
-      return aliveEnemies[0];
+    if (ennemisVivants.length === 1) {
+      return ennemisVivants[0];
     }
 
-    const options = aliveEnemies.map(
+    const options = ennemisVivants.map(
       (e) => `${e.getName()} (HP: ${e.getHp()}/${e.getMaxHp()})`
     );
-    const choice = await this.menu.selectOption(options);
-    return aliveEnemies[choice];
+    const choix = await this.menu.selectOption(options);
+    return ennemisVivants[choix];
   }
 
-  /**
-   * Sélectionne un allié
-   */
   protected async selectAlly(allies: Character[], allowDead: boolean = false): Promise<Character | null> {
-    const candidates = allowDead ? allies : allies.filter((a) => a.isAlive());
-    if (candidates.length === 0) return null;
+    const candidats = allowDead ? allies : allies.filter((a) => a.isAlive());
+    if (candidats.length === 0) return null;
 
-    if (candidates.length === 1) {
-      return candidates[0];
+    if (candidats.length === 1) {
+      return candidats[0];
     }
 
-    const options = candidates.map(
+    const options = candidats.map(
       (a) => `${a.getName()} (HP: ${a.getHp()}/${a.getMaxHp()})`
     );
-    const choice = await this.menu.selectOption(options);
-    return candidates[choice];
+    const choix = await this.menu.selectOption(options);
+    return candidats[choix];
   }
-
-  /**
-   * Permet d'utiliser un objet de l'inventaire sur un allié (ou soi-même)
-   */
   private async useItem(allies: Character[]): Promise<void> {
     if (!this.inventory || this.inventory.isEmpty()) {
       console.log('🎒 Inventaire vide.');
@@ -187,14 +145,14 @@ export abstract class Adventurer extends Character {
     const itemIndex = await this.menu.askNumber('Choisissez un objet : ', 1, items.length);
     const item = items[itemIndex - 1];
 
-    const allowDeadTarget = item.name === 'Demi-étoile';
-    const target = await this.selectAlly(allies, allowDeadTarget);
-    if (!target) {
+    const allowDeadTarget = item.name.includes('étoile');
+    const cible = await this.selectAlly(allies, allowDeadTarget);
+    if (!cible) {
       console.log('❌ Aucun allié valide.');
       return;
     }
 
-    const result = item.use(target);
+    const result = item.use(cible);
     console.log(result);
     this.inventory.removeItem(itemIndex - 1);
   }

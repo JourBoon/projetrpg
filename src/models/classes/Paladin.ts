@@ -57,15 +57,15 @@ export class Paladin extends Adventurer {
   protected async executeAction(
     actionIndex: number,
     _allies: Character[],
-    enemies: Character[]
+    ennemis: Character[]
   ): Promise<void> {
     switch (actionIndex) {
       case 0: // Attaque normale
-        await this.normalAttack(enemies);
+        await this.normalAttack(ennemis);
         break;
       case 1: // Châtiment Divin
         if (this.mana >= 40) {
-          await this.divineSmite(enemies);
+          await this.divineSmite(ennemis);
         } else {
           console.log('❌ Pas assez de mana !');
         }
@@ -80,25 +80,26 @@ export class Paladin extends Adventurer {
     }
   }
 
-  private async normalAttack(enemies: Character[]): Promise<void> {
-    const target = await this.selectTarget(enemies);
-    if (target) {
-      console.log(`${this.name} attaque ${target.getName()} avec son épée sacrée !`);
-      target.takeDamage(this.attack);
+  private async normalAttack(ennemis: Character[]): Promise<void> {
+    const cible = await this.selectTarget(ennemis);
+    if (cible) {
+      console.log(`${this.name} attaque ${cible.getName()} avec son épée sacrée !`);
+      cible.takeDamage(this.attack);
     }
   }
 
-  private async divineSmite(enemies: Character[]): Promise<void> {
+  private async divineSmite(ennemis: Character[]): Promise<void> {
     if (this.consumeMana(40)) {
-      const aoeDamage = Math.floor(this.attack * 0.4);
       console.log(
         `${this.name} invoque un Châtiment Divin sur tous les ennemis ! (-40 mana)`
       );
 
-      const aliveEnemies = enemies.filter((e) => e.isAlive());
-      aliveEnemies.forEach((enemy) => {
+      const ennemisVivants = ennemis.filter((e) => e.isAlive());
+      ennemisVivants.forEach((enemy) => {
+        const degatsBase = Math.max(1, this.attack - enemy.getDefense());
+        const degatsZone = Math.floor(baseDamage * 0.4);
         console.log(`  → ${enemy.getName()} est touché par la lumière divine !`);
-        enemy.takeDamage(aoeDamage);
+        enemy.takeTrueDamage(degatsZone);
       });
     }
   }

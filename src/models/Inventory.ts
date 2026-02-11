@@ -17,6 +17,13 @@ export class Inventory {
     return [...this.items];
   }
 
+  public displayItems(): void {
+    for (let i = 0; i < this.items.length; i++) {
+      const item = this.items[i];
+      console.log(`${i + 1}. ${item.name} - ${item.description}`);
+    }
+  }
+
   public isEmpty(): boolean {
     return this.items.length === 0;
   }

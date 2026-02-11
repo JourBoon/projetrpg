@@ -1,18 +1,11 @@
 import { Character } from './Character.ts';
 import { CharacterStats } from '../interfaces/CharacterStats.ts';
 
-/**
- * Interface définissant le butin qu'un monstre peut donner
- */
 export interface Loot {
   gold: number;
   experience: number;
 }
 
-/**
- * Classe représentant un monstre
- * Hérite de Character et ajoute un type, du butin et une IA simple
- */
 export class Monster extends Character {
   private type: string;
   private lootGold: number;
@@ -25,51 +18,35 @@ export class Monster extends Character {
     this.lootExperience = loot.experience;
   }
 
-  /**
-   * Implémentation de performAction pour les monstres (IA automatique)
-   * 20% de chances de viser le plus faible, 80% de chances de viser au hasard
-   */
-  public async performAction(_allies: Character[], enemies: Character[]): Promise<void> {
-    const aliveEnemies = enemies.filter((e) => e.isAlive());
-    if (aliveEnemies.length === 0) return;
+  public async performAction(_allies: Character[], ennemis: Character[]): Promise<void> {
+    const ennemisVivants = ennemis.filter((e) => e.isAlive());
+    if (ennemisVivants.length === 0) return;
 
-    let target: Character;
+    let cible: Character;
 
-    // 20% de chances de viser le joueur avec les PV les plus bas
     if (Math.random() < 0.2) {
-      target = this.selectWeakestTarget(aliveEnemies);
+      cible = this.selectWeakestTarget(ennemisVivants);
       console.log(`\n--- ${this.name} cible stratégiquement le plus faible ! ---`);
     } else {
-      // 80% de chances de viser au hasard
-      target = aliveEnemies[Math.floor(Math.random() * aliveEnemies.length)];
+      cible = ennemisVivants[Math.floor(Math.random() * ennemisVivants.length)];
       console.log(`\n--- Tour de ${this.name} ---`);
     }
 
-    this.attackTarget(target);
+    this.attackTarget(cible);
 
-    // Délai de 1 seconde pour la lisibilité
     await this.delay(1000);
   }
 
-  /**
-   * Sélectionne la cible avec le moins de HP
-   */
-  protected selectWeakestTarget(targets: Character[]): Character {
-    return targets.reduce((weakest, current) =>
-      current.getHp() < weakest.getHp() ? current : weakest
+  protected selectWeakestTarget(cibles: Character[]): Character {
+    return cibles.reduce((plusFaible, actuel) =>
+      actuel.getHp() < plusFaible.getHp() ? actuel : plusFaible
     );
   }
 
-  /**
-   * Délai asynchrone
-   */
   protected delay(ms: number): Promise<void> {
     return new Promise((resolve) => setTimeout(resolve, ms));
   }
 
-  /**
-   * Retourne le butin du monstre
-   */
   public getLoot(): Loot {
     return {
       gold: this.lootGold,
@@ -77,16 +54,9 @@ export class Monster extends Character {
     };
   }
 
-  /**
-   * Retourne le type du monstre
-   */
   public getType(): string {
     return this.type;
   }
-
-  /**
-   * Méthode statique pour créer des monstres prédéfinis
-   */
   public static createGoblin(): Monster {
     return new Monster(
       'Gobelin',
@@ -137,6 +107,42 @@ export class Monster extends Character {
       {
         gold: 100,
         experience: 150,
+      }
+    );
+  }
+
+  public static createTroll(): Monster {
+    return new Monster(
+      'Troll',
+      {
+        name: 'Troll',
+        hp: 120,
+        maxHp: 120,
+        attack: 20,
+        defense: 8,
+        speed: 4,
+      },
+      {
+        gold: 40,
+        experience: 75,
+      }
+    );
+  }
+
+  public static createSkeleton(): Monster {
+    return new Monster(
+      'Squelette',
+      {
+        name: 'Squelette',
+        hp: 60,
+        maxHp: 60,
+        attack: 12,
+        defense: 3,
+        speed: 10,
+      },
+      {
+        gold: 15,
+        experience: 30,
       }
     );
   }

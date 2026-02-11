@@ -45,26 +45,26 @@ export class Warrior extends Adventurer {
   protected async executeAction(
     actionIndex: number,
     _allies: Character[],
-    enemies: Character[]
+    ennemis: Character[]
   ): Promise<void> {
     switch (actionIndex) {
       case 0: // Attaque normale
-        await this.normalAttack(enemies);
+        await this.normalAttack(ennemis);
         break;
       case 1: // Posture défensive
         this.defensiveStance();
         break;
       case 2: // Coup puissant
-        await this.powerStrike(enemies);
+        await this.powerStrike(ennemis);
         break;
     }
   }
 
-  private async normalAttack(enemies: Character[]): Promise<void> {
-    const target = await this.selectTarget(enemies);
-    if (target) {
-      console.log(`${this.name} attaque ${target.getName()} !`);
-      target.takeDamage(this.attack);
+  private async normalAttack(ennemis: Character[]): Promise<void> {
+    const cible = await this.selectTarget(ennemis);
+    if (cible) {
+      console.log(`${this.name} attaque ${cible.getName()} !`);
+      cible.takeDamage(this.attack);
     }
   }
 
@@ -76,14 +76,14 @@ export class Warrior extends Adventurer {
     );
   }
 
-  private async powerStrike(enemies: Character[]): Promise<void> {
-    const target = await this.selectTarget(enemies);
-    if (target) {
+  private async powerStrike(ennemis: Character[]): Promise<void> {
+    const cible = await this.selectTarget(ennemis);
+    if (cible) {
       const hit = Math.random() > 0.2; // 80% de chances de toucher
       if (hit) {
-        const damage = Math.floor(this.attack * 1.5);
-        console.log(`${this.name} utilise Coup Puissant sur ${target.getName()} !`);
-        target.takeDamage(damage);
+        const degats = Math.floor(this.attack * 1.5);
+        console.log(`${this.name} utilise Coup Puissant sur ${cible.getName()} !`);
+        cible.takeDamage(degats);
       } else {
         console.log(`${this.name} utilise Coup Puissant mais rate sa cible !`);
       }

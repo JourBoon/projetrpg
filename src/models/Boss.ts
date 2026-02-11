@@ -2,10 +2,6 @@ import { Monster, Loot } from './Monster.ts';
 import { Character } from './Character.ts';
 import { CharacterStats } from '../interfaces/CharacterStats.ts';
 
-/**
- * Classe Boss : Hérite de Monster avec une attaque de zone
- * 30% de probabilité de déclencher une attaque de zone
- */
 export class Boss extends Monster {
   private aoeAttackChance: number;
   private aoeAttackName: string;
@@ -17,53 +13,48 @@ export class Boss extends Monster {
     aoeAttackName: string = 'Attaque Dévastatrice'
   ) {
     super(name, stats, loot);
-    this.aoeAttackChance = 0.3; // 30% de chances
+    this.aoeAttackChance = 0.3;
     this.aoeAttackName = aoeAttackName;
   }
 
-  /**
-   * Override de performAction pour ajouter l'attaque de zone
-   */
-  public override async performAction(_allies: Character[], enemies: Character[]): Promise<void> {
-    const aliveEnemies = enemies.filter((e) => e.isAlive());
-    if (aliveEnemies.length === 0) return;
+  public override async performAction(_allies: Character[], ennemis: Character[]): Promise<void> {
+    const ennemisVivants = ennemis.filter((e) => e.isAlive());
+    if (ennemisVivants.length === 0) return;
 
     console.log(`\n--- Tour de ${this.name} (BOSS) ---`);
 
-    // 30% de chances d'utiliser l'attaque de zone
     if (Math.random() < this.aoeAttackChance) {
-      this.areaAttack(aliveEnemies);
+      this.areaAttack(ennemisVivants);
     } else {
-      // Sinon, attaque normale avec IA standard
-      let target: Character;
+      let cible: Character;
 
       if (Math.random() < 0.2) {
-        target = this.selectWeakestTarget(aliveEnemies);
+        cible = this.selectWeakestTarget(ennemisVivants);
         console.log(`${this.name} cible le plus faible !`);
       } else {
-        target = aliveEnemies[Math.floor(Math.random() * aliveEnemies.length)];
+        cible = ennemisVivants[Math.floor(Math.random() * ennemisVivants.length)];
       }
 
-      this.attackTarget(target);
+      this.attackTarget(cible);
     }
 
-    // Délai de 1 seconde
     await this.delay(1000);
   }
 
   /**
    * Attaque de zone : inflige des dégâts à tous les ennemis
    */
-  private areaAttack(targets: Character[]): void {
-    const aoeDamage = Math.floor(this.getAttack() * 0.6); // 60% de l'attaque
+  private areaAttack(cibles: Character[]): void {
     console.log(
       `💥 ${this.name} utilise ${this.aoeAttackName} sur tous les adversaires !`
     );
 
-    targets.forEach((target) => {
-      if (target.isAlive()) {
-        console.log(`  → ${target.getName()} est touché !`);
-        target.takeDamage(aoeDamage);
+    cibles.forEach((cible) => {
+      if (cible.isAlive()) {
+        const degatsBase = Math.max(1, this.getAttack() - cible.getDefense());
+        const degatsZone = Math.floor(degatsBase * 0.4);
+        console.log(`  → ${cible.getName()} est touché !`);
+        cible.takeTrueDamage(degatsZone);
       }
     });
   }

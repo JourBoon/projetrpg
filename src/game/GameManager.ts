@@ -18,81 +18,81 @@ import { BossRoom } from '../dungeon/BossRoom.ts';
  */
 export class GameManager {
   private menu: Menu;
-  private player: Adventurer | null;
   private party: Party | null;
 
-  /**
-   * Constructeur public
-   */
   constructor() {
     this.menu = new Menu();
-    this.player = null;
     this.party = null;
   }
 
-  /**
-   * Démarre le jeu
-   */
   public async start(): Promise<void> {
     this.menu.displayTitle('⚔️  RPG CLI - Bienvenue ! ⚔️');
-    await this.createPlayer();
+    await this.createParty();
 
-    if (!this.player) {
+    if (!this.party || this.party.getMembers().length === 0) {
       console.log('❌ Impossible de démarrer l\'aventure.');
       return;
     }
 
-    this.party = new Party([this.player], new Inventory());
     await this.dungeonRun();
   }
 
-  /**
-   * Création du personnage du joueur
-   */
-  private async createPlayer(): Promise<void> {
-    const name = await this.menu.ask('Entrez le nom de votre héros : ');
-    const heroName = name || 'Aventurier';
+  private async createParty(): Promise<void> {
+    const adventurers: Adventurer[] = [];
 
-    this.menu.displayTitle('CHOISISSEZ VOTRE CLASSE');
+    console.log('\n🎭 Vous devez choisir 3 aventuriers pour votre groupe.\n');
 
-    const classes = [
-      '⚔️  Guerrier - Équilibré, haute défense',
-      '🔮 Mage - Attaques magiques, faible défense',
-      '✨ Paladin - Attaques de zone sacrées',
-      '💢 Barbare - Puissant mais risqué',
-      '✝️  Prêtre - Soutien et soins',
-      '🗡️  Voleur - Rapide, peut voler',
-    ];
+    for (let i = 1; i <= 3; i++) {
+      console.log(`\n=== Aventurier ${i}/3 ===`);
+      const name = await this.menu.ask(`Nom de l'aventurier ${i} : `);
+      const heroName = name || `Aventurier ${i}`;
 
-    const choice = await this.menu.selectOption(classes);
+      this.menu.displayTitle('CHOISISSEZ VOTRE CLASSE');
 
-    switch (choice) {
-      case 0:
-        this.player = new Warrior(heroName);
-        break;
-      case 1:
-        this.player = new Mage(heroName);
-        break;
-      case 2:
-        this.player = new Paladin(heroName);
-        break;
-      case 3:
-        this.player = new Barbarian(heroName);
-        break;
-      case 4:
-        this.player = new Priest(heroName);
-        break;
-      case 5:
-        this.player = new Rogue(heroName);
-        break;
-      default:
-        this.player = new Warrior(heroName);
+      const classes = [
+        '⚔️  Guerrier - Équilibré, haute défense',
+        '🔮 Mage - Attaques magiques, faible défense',
+        '✨ Paladin - Attaques de zone sacrées',
+        '💢 Barbare - Puissant mais risqué',
+        '✝️  Prêtre - Soutien et soins',
+        '🗡️  Voleur - Rapide, peut voler',
+      ];
+
+      const choice = await this.menu.selectOption(classes);
+
+      let adventurer: Adventurer;
+      switch (choice) {
+        case 0:
+          adventurer = new Warrior(heroName);
+          break;
+        case 1:
+          adventurer = new Mage(heroName);
+          break;
+        case 2:
+          adventurer = new Paladin(heroName);
+          break;
+        case 3:
+          adventurer = new Barbarian(heroName);
+          break;
+        case 4:
+          adventurer = new Priest(heroName);
+          break;
+        case 5:
+          adventurer = new Rogue(heroName);
+          break;
+        default:
+          adventurer = new Warrior(heroName);
+      }
+
+      adventurers.push(adventurer);
+      console.log(
+        `\n✨ ${adventurer.getName()} le ${adventurer.getClassName()} rejoint le groupe !\n`
+      );
+      adventurer.displayFullStats();
     }
 
-    console.log(
-      `\n✨ ${this.player!.getName()} le ${this.player!.getClassName()} a été créé avec succès !\n`
-    );
-    this.player!.displayFullStats();
+    this.party = new Party(adventurers, new Inventory());
+    console.log('\n🎉 Votre équipe est complète !\n');
     await this.menu.pressEnterToContinue();
   }
 

@@ -3,10 +3,10 @@ import { Item } from '../Item.ts';
 
 export class Potion implements Item {
   public name = 'Potion';
-  public description = 'Restaure 30% des HP max.';
+  public description = 'Restaure 50% des HP max.';
 
   public use(target: Character): string {
-    target.heal(30);
+    target.heal(50);
     return `${target.getName()} retrouve des forces !`;
   }
 }

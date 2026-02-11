@@ -4,8 +4,10 @@ import { Boss } from './Boss.ts';
 export class MonsterFactory {
   public static createRandom(): Monster {
     const roll = Math.random();
-    if (roll < 0.5) return Monster.createGoblin();
-    if (roll < 0.85) return Monster.createOrc();
+    if (roll < 0.25) return Monster.createGoblin();
+    if (roll < 0.45) return Monster.createOrc();
+    if (roll < 0.65) return Monster.createSkeleton();
+    if (roll < 0.85) return Monster.createTroll();
     return Monster.createDragon();
   }
 

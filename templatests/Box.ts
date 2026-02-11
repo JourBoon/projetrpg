@@ -1,3 +1,5 @@
+import { contact } from "./contact.ts";
+
 export class Box {
     length : number;
     width : number;

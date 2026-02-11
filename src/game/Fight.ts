@@ -3,10 +3,6 @@ import { Adventurer } from '../models/Adventurer.ts';
 import { Monster } from '../models/Monster.ts';
 import { Party } from '../models/Party.ts';
 
-/**
- * Classe gérant les combats entre deux équipes
- * Implémente un système de tour par tour basé sur la vitesse avec actions polymorphes
- */
 export class Fight {
   private teamA: Character[];
   private teamB: Character[];
@@ -22,9 +18,6 @@ export class Fight {
     this.currentTurn = 0;
   }
 
-  /**
-   * Démarre le combat et gère la boucle principale (ASYNCHRONE)
-   */
   public async start(): Promise<void> {
     console.log('\n⚔️  LE COMBAT COMMENCE ! ⚔️\n');
     this.prepareAdventurers();
@@ -32,7 +25,6 @@ export class Fight {
     this.sortBySpeed();
     this.displayTurnOrder();
 
-    // Boucle de combat asynchrone
     while (!this.checkVictory()) {
       await this.executeTurn();
     }
@@ -49,18 +41,12 @@ export class Fight {
     });
   }
 
-  /**
-   * Trie tous les participants par vitesse (décroissant)
-   */
   private sortBySpeed(): void {
     this.turnOrder = [...this.teamA, ...this.teamB].sort(
       (a, b) => b.getSpeed() - a.getSpeed()
     );
   }
 
-  /**
-   * Affiche l'ordre des tours
-   */
   private displayTurnOrder(): void {
     console.log('📋 Ordre des tours (basé sur la vitesse) :');
     this.turnOrder.forEach((character, index) => {
@@ -69,9 +55,6 @@ export class Fight {
     console.log('');
   }
 
-  /**
-   * Affiche les deux équipes
-   */
   private displayTeams(): void {
     console.log('🔵 Équipe A :');
     this.teamA.forEach((char) => {
@@ -85,19 +68,13 @@ export class Fight {
     console.log('');
   }
 
-  /**
-   * Exécute le tour d'un personnage (POLYMORPHE & ASYNCHRONE)
-   */
   private async executeTurn(): Promise<void> {
     const attacker = this.turnOrder[this.currentTurn];
 
-    // Vérifier si l'attaquant est encore en vie
     if (!attacker.isAlive()) {
       this.nextTurn();
       return;
     }
-
-    // Déterminer l'équipe alliée et ennemie
     const allies = this.getAllyTeam(attacker);
     const enemies = this.getEnemyTeam(attacker);
 

@@ -1,22 +1,12 @@
 import { Adventurer } from '../Adventurer.ts';
 import { Character } from '../Character.ts';
 import { CharacterStats } from '../../interfaces/CharacterStats.ts';
+import { Potion } from '../items/Potion.ts';
+import { Ether } from '../items/Ether.ts';
+import { StarFragment } from '../items/StarFragment.ts';
+import { HalfStar } from '../items/HalfStar.ts';
 
-/**
- * Interface pour le butin volé
- */
-interface StolenLoot {
-  gold: number;
-  item: string | null;
-}
-
-/**
- * Classe Voleur : Grande vitesse, action Voler avec probabilités de butin
- */
 export class Rogue extends Adventurer {
-  private stolenGold: number;
-  private stolenItems: string[];
-
   constructor(name: string) {
     const stats: CharacterStats = {
       name: name,
@@ -24,13 +14,11 @@ export class Rogue extends Adventurer {
       maxHp: 95,
       attack: 14,
       defense: 4,
-      speed: 14, // Très rapide
+      speed: 14,
       mana: 0,
       maxMana: 0,
     };
     super(name, stats, 'Voleur');
-    this.stolenGold = 0;
-    this.stolenItems = [];
   }
 
   protected levelUp(): void {
@@ -51,128 +39,90 @@ export class Rogue extends Adventurer {
     return [
       '⚔️  Attaque normale',
       '🗡️  Attaque sournoise (2x dégâts si vitesse > cible)',
-      '💰 Voler (chance de butin : Potion 30%, Éther 10%, Or)',
+      '💰 Voler (40% rien, 30% Potion, 15% Fragment, 10% Ether, 5% Demi-étoile)',
     ];
   }
 
   protected async executeAction(
     actionIndex: number,
     _allies: Character[],
-    enemies: Character[]
+    ennemis: Character[]
   ): Promise<void> {
     switch (actionIndex) {
       case 0: // Attaque normale
-        await this.normalAttack(enemies);
+        await this.normalAttack(ennemis);
         break;
       case 1: // Attaque sournoise
-        await this.sneakAttack(enemies);
+        await this.sneakAttack(ennemis);
         break;
       case 2: // Voler
-        await this.steal(enemies);
+        await this.steal(ennemis);
         break;
     }
   }
 
-  private async normalAttack(enemies: Character[]): Promise<void> {
-    const target = await this.selectTarget(enemies);
-    if (target) {
-      console.log(`${this.name} attaque ${target.getName()} avec ses dagues !`);
-      target.takeDamage(this.attack);
+  private async normalAttack(ennemis: Character[]): Promise<void> {
+    const cible = await this.selectTarget(ennemis);
+    if (cible) {
+      console.log(`${this.name} attaque ${cible.getName()} avec ses dagues !`);
+      cible.takeDamage(this.attack);
     }
   }
 
-  private async sneakAttack(enemies: Character[]): Promise<void> {
-    const target = await this.selectTarget(enemies);
-    if (target) {
-      const isFasterThanTarget = this.speed > target.getSpeed();
+  private async sneakAttack(ennemis: Character[]): Promise<void> {
+    const cible = await this.selectTarget(ennemis);
+    if (cible) {
+      const isFasterThanTarget = this.speed > cible.getSpeed();
 
       if (isFasterThanTarget) {
-        const sneakDamage = this.attack * 2;
+        const degatsSournois = this.attack * 2;
         console.log(
-          `${this.name} utilise Attaque Sournoise sur ${target.getName()} ! (Avantage de vitesse : 2x dégâts)`
+          `${this.name} utilise Attaque Sournoise sur ${cible.getName()} ! (Avantage de vitesse : 2x dégâts)`
         );
-        target.takeDamage(sneakDamage);
+        cible.takeDamage(degatsSournois);
       } else {
         console.log(
-          `${this.name} tente une Attaque Sournoise sur ${target.getName()}, mais la cible est trop rapide !`
+          `${this.name} tente une Attaque Sournoise sur ${cible.getName()}, mais la cible est trop rapide !`
         );
-        target.takeDamage(this.attack); // Dégâts normaux
+        cible.takeDamage(this.attack); // Dégâts normaux
       }
     }
   }
 
-  private async steal(enemies: Character[]): Promise<void> {
-    const target = await this.selectTarget(enemies);
-    if (target) {
-      console.log(`${this.name} tente de voler ${target.getName()} !`);
+  private async steal(ennemis: Character[]): Promise<void> {
+    const cible = await this.selectTarget(ennemis);
+    if (cible) {
+      console.log(`${this.name} tente de voler ${cible.getName()} !`);
 
-      const loot = this.attemptSteal();
-
-      if (loot.item) {
-        this.stolenItems.push(loot.item);
-        console.log(`💎 ${this.name} a volé : ${loot.item} !`);
-      }
-
-      if (loot.gold > 0) {
-        this.stolenGold += loot.gold;
-        console.log(`💰 ${this.name} a volé ${loot.gold} pièces d'or !`);
-      }
-
-      if (!loot.item && loot.gold === 0) {
+      const tirage = Math.random();
+      
+      if (tirage < 0.05) {
+        const item = new HalfStar();
+        if (this.inventory) {
+          this.inventory.addItem(item);
+          console.log(`💎 ${this.name} a volé une ${item.name} !`);
+        }
+      } else if (tirage < 0.15) {
+        const item = new Ether();
+        if (this.inventory) {
+          this.inventory.addItem(item);
+          console.log(`💎 ${this.name} a volé un ${item.name} !`);
+        }
+      } else if (tirage < 0.30) {
+        const item = new StarFragment();
+        if (this.inventory) {
+          this.inventory.addItem(item);
+          console.log(`💎 ${this.name} a volé un ${item.name} !`);
+        }
+      } else if (tirage < 0.60) {
+        const item = new Potion();
+        if (this.inventory) {
+          this.inventory.addItem(item);
+          console.log(`💎 ${this.name} a volé une ${item.name} !`);
+        }
+      } else {
         console.log(`❌ ${this.name} n'a rien pu voler...`);
       }
-    }
-  }
-
-  private attemptSteal(): StolenLoot {
-    const loot: StolenLoot = {
-      gold: 0,
-      item: null,
-    };
-
-    // 30% de chances de voler une Potion
-    if (Math.random() < 0.3) {
-      loot.item = 'Potion de Soin';
-      return loot;
-    }
-
-    // 10% de chances de voler un Éther
-    if (Math.random() < 0.1) {
-      loot.item = 'Éther (Mana)';
-      return loot;
-    }
-
-    // 5% de chances de voler un objet rare
-    if (Math.random() < 0.05) {
-      loot.item = 'Gemme Précieuse';
-      return loot;
-    }
-
-    // Sinon, voler de l'or (50-100 pièces)
-    loot.gold = Math.floor(Math.random() * 51) + 50;
-
-    return loot;
-  }
-
-  /**
-   * Accesseurs pour le butin volé
-   */
-  public getStolenGold(): number {
-    return this.stolenGold;
-  }
-
-  public getStolenItems(): string[] {
-    return [...this.stolenItems];
-  }
-
-  public displayLoot(): void {
-    console.log(`\n💰 Butin volé par ${this.name} :`);
-    console.log(`   Or : ${this.stolenGold}`);
-    if (this.stolenItems.length > 0) {
-      console.log(`   Objets :`);
-      this.stolenItems.forEach((item) => console.log(`      - ${item}`));
-    } else {
-      console.log(`   Objets : Aucun`);
     }
   }
 }

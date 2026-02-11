@@ -63,11 +63,11 @@ export class Priest extends Adventurer {
   protected async executeAction(
     actionIndex: number,
     allies: Character[],
-    enemies: Character[]
+    ennemis: Character[]
   ): Promise<void> {
     switch (actionIndex) {
       case 0: // Attaque normale
-        await this.normalAttack(enemies);
+        await this.normalAttack(ennemis);
         break;
       case 1: // Soin
         if (this.mana >= 20) {
@@ -85,7 +85,7 @@ export class Priest extends Adventurer {
         break;
       case 3: // Lumière Sacrée
         if (this.mana >= 30) {
-          await this.holyLight(enemies);
+          await this.holyLight(ennemis);
         } else {
           console.log('❌ Pas assez de mana !');
         }
@@ -93,41 +93,41 @@ export class Priest extends Adventurer {
     }
   }
 
-  private async normalAttack(enemies: Character[]): Promise<void> {
-    const target = await this.selectTarget(enemies);
-    if (target) {
-      console.log(`${this.name} frappe ${target.getName()} avec son marteau !`);
-      target.takeDamage(this.attack);
+  private async normalAttack(ennemis: Character[]): Promise<void> {
+    const cible = await this.selectTarget(ennemis);
+    if (cible) {
+      console.log(`${this.name} frappe ${cible.getName()} avec son marteau !`);
+      cible.takeDamage(this.attack);
     }
   }
 
   private async healAlly(allies: Character[]): Promise<void> {
-    const target = await this.selectAlly(allies);
-    if (target && this.consumeMana(20)) {
-      console.log(`${this.name} lance un Soin sur ${target.getName()} ! (-20 mana)`);
-      target.heal(25);
+    const cible = await this.selectAlly(allies);
+    if (cible && this.consumeMana(20)) {
+      console.log(`${this.name} lance un Soin sur ${cible.getName()} ! (-20 mana)`);
+      cible.heal(25);
     }
   }
 
   private async groupHeal(allies: Character[]): Promise<void> {
     if (this.consumeMana(40)) {
       console.log(`${this.name} invoque un Soin de Groupe ! (-40 mana)`);
-      const aliveAllies = allies.filter((a) => a.isAlive());
-      aliveAllies.forEach((ally) => {
+      const alliesVivants = allies.filter((a) => a.isAlive());
+      alliesVivants.forEach((ally) => {
         console.log(`  → ${ally.getName()} est soigné !`);
         ally.heal(15);
       });
     }
   }
 
-  private async holyLight(enemies: Character[]): Promise<void> {
-    const target = await this.selectTarget(enemies);
-    if (target && this.consumeMana(30)) {
-      const magicDamage = Math.floor(this.attack * 1.8);
+  private async holyLight(ennemis: Character[]): Promise<void> {
+    const cible = await this.selectTarget(ennemis);
+    if (cible && this.consumeMana(30)) {
+      const degatsMagiques = Math.floor(this.attack * 1.8);
       console.log(
-        `${this.name} invoque la Lumière Sacrée sur ${target.getName()} ! (-30 mana)`
+        `${this.name} invoque la Lumière Sacrée sur ${cible.getName()} ! (-30 mana)`
       );
-      target.takeDamage(magicDamage, true); // Ignore la défense
+      cible.takeDamage(degatsMagiques, true); // Ignore la défense
     }
   }
 }

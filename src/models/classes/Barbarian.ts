@@ -45,55 +45,56 @@ export class Barbarian extends Adventurer {
   protected async executeAction(
     actionIndex: number,
     _allies: Character[],
-    enemies: Character[]
+    ennemis: Character[]
   ): Promise<void> {
     switch (actionIndex) {
       case 0: // Attaque normale
-        await this.normalAttack(enemies);
+        await this.normalAttack(ennemis);
         break;
       case 1: // Rage Berserk
-        await this.berserkRage(enemies);
+        await this.berserkRage(ennemis);
         break;
       case 2: // Soif de sang
-        await this.bloodlust(enemies);
+        await this.bloodlust(ennemis);
         break;
     }
   }
 
-  private async normalAttack(enemies: Character[]): Promise<void> {
-    const target = await this.selectTarget(enemies);
-    if (target) {
-      console.log(`${this.name} attaque sauvagement ${target.getName()} !`);
-      target.takeDamage(this.attack);
+  private async normalAttack(ennemis: Character[]): Promise<void> {
+    const cible = await this.selectTarget(ennemis);
+    if (cible) {
+      console.log(`${this.name} attaque sauvagement ${cible.getName()} !`);
+      cible.takeDamage(this.attack);
     }
   }
 
-  private async berserkRage(enemies: Character[]): Promise<void> {
-    const target = await this.selectTarget(enemies);
-    if (target) {
+  private async berserkRage(ennemis: Character[]): Promise<void> {
+    const cible = await this.selectTarget(ennemis);
+    if (cible) {
       const hpCost = Math.floor(this.maxHp * 0.2);
-      const berserkDamage = Math.floor(this.attack * 1.3);
+      const degatsBase = Math.max(1, this.attack - cible.getDefense());
+      const degatsBerserk = Math.floor(baseDamage * 1.3);
 
       console.log(`${this.name} entre en Rage Berserk ! (Coût: ${hpCost} HP)`);
       this.takeTrueDamage(hpCost);
 
       if (this.isAlive()) {
-        console.log(`${this.name} frappe ${target.getName()} avec une force déchaînée !`);
-        target.takeDamage(berserkDamage);
+        console.log(`${this.name} frappe ${cible.getName()} avec une force déchaînée !`);
+        cible.takeTrueDamage(degatsBerserk);
       } else {
         console.log(`${this.name} s'est infligé trop de dégâts et s'effondre !`);
       }
     }
   }
 
-  private async bloodlust(enemies: Character[]): Promise<void> {
-    const target = await this.selectTarget(enemies);
-    if (target) {
-      const initialTargetHp = target.getHp();
-      console.log(`${this.name} attaque ${target.getName()} avec Soif de Sang !`);
-      target.takeDamage(this.attack);
+  private async bloodlust(ennemis: Character[]): Promise<void> {
+    const cible = await this.selectTarget(ennemis);
+    if (cible) {
+      const initialTargetHp = cible.getHp();
+      console.log(`${this.name} attaque ${cible.getName()} avec Soif de Sang !`);
+      cible.takeDamage(this.attack);
 
-      const damageDealt = initialTargetHp - target.getHp();
+      const damageDealt = initialTargetHp - cible.getHp();
       const lifeSteal = Math.floor(damageDealt * 0.3);
 
       if (lifeSteal > 0) {

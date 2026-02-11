@@ -2,12 +2,15 @@ import { Character } from '../Character.ts';
 import { Item } from '../Item.ts';
 
 export class StarFragment implements Item {
-  public name = 'Fragment d\'étoile';
-  public description = 'Restaure totalement HP et mana.';
+  public name = 'Morceau d\'étoile';
+  public description = 'Ressuscite avec 20% HP si KO, sinon soigne 50% HP.';
 
   public use(target: Character): string {
-    target.heal(100);
-    target.recoverManaPercent(100);
-    return `${target.getName()} est revigoré par la lumière stellaire !`;
+    if (target.isDead()) {
+      target.revive(20);
+      return `${target.getName()} revient à la vie !`;
+    }
+    target.heal(50);
+    return `${target.getName()} se sent revigoré !`;
   }
 }
