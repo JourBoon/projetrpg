@@ -97,7 +97,7 @@ export class Paladin extends Adventurer {
       const ennemisVivants = ennemis.filter((e) => e.isAlive());
       ennemisVivants.forEach((enemy) => {
         const degatsBase = Math.max(1, this.attack - enemy.getDefense());
-        const degatsZone = Math.floor(baseDamage * 0.4);
+        const degatsZone = Math.floor(degatsBase * 0.4);
         console.log(`  → ${enemy.getName()} est touché par la lumière divine !`);
         enemy.takeTrueDamage(degatsZone);
       });
